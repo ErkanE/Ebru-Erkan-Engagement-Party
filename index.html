@@ -73,6 +73,8 @@
   .hint { display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; color: var(--muted); margin: 12px 2px 0; }
   .hint svg { flex: none; width: 16px; height: 16px; margin-top: 2px; }
   .error { color: var(--bad); font-size: 14px; margin-top: 8px; }
+  .setup-error { background: #fbe9e7; color: var(--bad); border-radius: 12px; padding: 14px 16px; font-size: 15px; text-align: center; }
+  .demo-banner { background: #fff4d6; color: #7a5a12; border: 1px dashed #d9b45a; border-radius: 12px; padding: 10px 14px; font-size: 13.5px; text-align: center; margin-bottom: 16px; }
   .btn { border: 0; background: var(--navy); color: #fff; border-radius: 12px; padding: 13px 18px; font-weight: 600; cursor: pointer; width: 100%; font-size: 16px; }
 
   /* Progress */
@@ -137,6 +139,9 @@
   <section class="card">
     <h2 data-t="heading"></h2>
     <p class="intro" data-t="intro"></p>
+
+    <div id="setupError" class="setup-error" hidden></div>
+    <div id="demoBanner" class="demo-banner" hidden></div>
 
     <!-- Event code step (only shown when the backend requires one and the link did not include it) -->
     <form id="codeStep" class="stack" hidden>
@@ -212,7 +217,9 @@ const T = {
     thanksTitle: 'Çok teşekkür ederiz!',
     thanksText: n => `${n} dosya bize ulaştı. Daha fazlasını da ekleyebilirsiniz.`,
     leave: 'Yükleme devam ediyor. Sayfadan çıkarsanız yarıda kalır.',
-    footer: 'Dosyalar doğrudan Ebru ve Erkan’nun Google Drive’ına kaydedilir. Başka kimse göremez.',
+    notConfigured: 'Yükleme henüz ayarlanmadı. Lütfen daha sonra tekrar deneyin.',
+    demo: 'Deneme modu: dosyalar hiçbir yere gönderilmez (sayfa bu bilgisayarda açık).',
+    footer: 'Dosyalar doğrudan Ebru ve Erkan’ın Google Drive’ına kaydedilir. Başka kimse göremez.',
   },
   en: {
     eyebrow: 'Welcome to our engagement party',
@@ -230,6 +237,8 @@ const T = {
     thanksTitle: 'Thank you so much!',
     thanksText: n => `${n} ${n === 1 ? 'file' : 'files'} reached us. Feel free to add more.`,
     leave: 'Uploads are still running. Leaving now will stop them.',
+    notConfigured: 'Uploads aren’t set up yet. Please try again later.',
+    demo: 'Demo mode: nothing is uploaded (this page is open on your own computer).',
     footer: 'Files are saved straight to Ebru & Erkan’s Google Drive. No one else can see them.',
   },
 };
@@ -287,8 +296,14 @@ async function call(action, payload) {
     }
   }
   if (inAppsScript) return gasCall(action, payload);
-  return mockCall(action, payload);
+  if (DEMO_MODE) return mockCall(action, payload);
+  throw new Error('NOT_CONFIGURED');
 }
+// Simulated uploads are only allowed when the page is opened on this computer (file:// or localhost).
+// On a real website without an upload link the page refuses instead of pretending to upload.
+const IS_LOCAL = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const DEMO_MODE = !httpUrl && !inAppsScript && IS_LOCAL;
+const NOT_CONFIGURED = !httpUrl && !inAppsScript && !IS_LOCAL;
 const errMsg = e => String((e && e.message) || e || '').replace(/^(Script)?Error:\s*/i, '').trim();
 const errCode = e => {
   const m = errMsg(e);
@@ -310,7 +325,15 @@ function readUrlCode() {
 }
 async function init() {
   applyLang();
-  $('guest').value = store.get('guest') || '';
+  if (NOT_CONFIGURED) {
+    $('setupError').textContent = t('notConfigured');
+    $('setupError').hidden = false;
+    return;
+  }
+  if (DEMO_MODE) { $('demoBanner').textContent = t('demo'); $('demoBanner').hidden = false; }
+  // Start with an empty name for every visit (phones may be passed around at the party).
+  $('guest').value = '';
+  try { localStorage.removeItem('ee.guest'); } catch (e) {}
   let cfg = { codeRequired: false };
   try { cfg = await call('config', {}); } catch (e) {}
   eventCode = (await readUrlCode()) || store.get('code') || '';
@@ -338,7 +361,6 @@ $('codeStep').addEventListener('submit', async ev => {
 const items = [];
 let active = 0, reconnecting = 0, wakeLock = null;
 
-$('guest').addEventListener('change', () => store.set('guest', $('guest').value.trim()));
 $('files').addEventListener('change', e => {
   const files = Array.from(e.target.files || []);
   e.target.value = '';
