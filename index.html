@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Erkan &amp; Ebru · Photos</title>
+<title>Ebru &amp; Erkan · Photos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Hurricane&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
   body {
     margin: 0; background: var(--bg); color: var(--ink);
     font: 400 16px/1.5 "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
-  }
+  } 
   button, input { font: inherit; color: inherit; }
 
   /* Hero */
@@ -39,20 +39,8 @@
   }
   .hero-text { position: absolute; left: 0; right: 0; bottom: 84px; z-index: 1; text-align: center; color: #fff; padding: 0 16px; }
   .eyebrow { font-size: 12px; letter-spacing: .28em; text-transform: uppercase; font-weight: 500; opacity: .92; }
-  .names {
-    font-family: "Hurricane", cursive, Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(54px, 14vw, 96px);
-    line-height: 1.05;
-    margin: 8px 0 6px;
-    letter-spacing: .01em;
-    text-shadow: 0 2px 24px rgba(0,0,0,.3);
-  }
-  .names .amp {
-    font-style: normal;
-    color: #f3c9a8;
-    padding: 0 .08em;
-  }
+  .names { font-family: "Hurricane", cursive, Georgia, serif; font-weight: 400; font-size: clamp(48px, 13vw, 84px); line-height: 1; margin: 8px 0 6px; letter-spacing: .01em; text-shadow: 0 2px 24px rgba(0,0,0,.3); }
+  .names .amp { font-style: normal; color: #f3c9a8; padding: 0 .08em; }
   .date { font-size: 15px; letter-spacing: .12em; opacity: .95; }
   .lang { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 2; display: flex; background: rgba(255,255,255,.18); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 999px; padding: 3px; }
   .lang button { border: 0; background: transparent; color: #fff; font-size: 13px; font-weight: 600; letter-spacing: .06em; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
@@ -140,7 +128,7 @@
   </div>
   <div class="hero-text">
     <div class="eyebrow" data-t="eyebrow"></div>
-    <h1 class="names">Erkan <span class="amp">&amp;</span> Ebru</h1>
+    <h1 class="names">Ebru <span class="amp">&amp;</span> Erkan</h1>
     <div class="date" id="date" hidden></div>
   </div>
 </header>
@@ -199,7 +187,7 @@
 
 <script>
 /* ======================= Settings you can change ======================= */
-const EVENT_DATE = '';     // e.g. '14.06.2027' — leave '' to hide the date line
+const EVENT_DATE = '05.12.2026';     // e.g. '14.06.2027' — leave '' to hide the date line
 const API_URL = '';        // only when hosting this page outside Apps Script: your /exec URL
 /* ======================================================================= */
 const EXEC_URL = '__EXEC_URL__';   // filled in automatically by Code.gs
@@ -224,13 +212,13 @@ const T = {
     thanksTitle: 'Çok teşekkür ederiz!',
     thanksText: n => `${n} dosya bize ulaştı. Daha fazlasını da ekleyebilirsiniz.`,
     leave: 'Yükleme devam ediyor. Sayfadan çıkarsanız yarıda kalır.',
-    footer: 'Dosyalar doğrudan Erkan ve Ebru’nun Google Drive’ına kaydedilir. Başka kimse göremez.',
+    footer: 'Dosyalar doğrudan Ebru ve Erkan’nun Google Drive’ına kaydedilir. Başka kimse göremez.',
   },
   en: {
     eyebrow: 'Welcome to our engagement party',
     heading: 'Share your memories with us',
     intro: 'Upload the photos and videos you took today. They come straight to us in full original quality.',
-    nameLabel: 'Your name (optional)', namePh: 'e.g. Sarah & Tom',
+    nameLabel: 'Your name (optional)', namePh: 'e.g. Ebru & Erkan',
     pick: 'Choose photos & videos', pickMore: 'Add more',
     hint: 'Keep this page open until the upload finishes.',
     codeLabel: 'Event code', continue: 'Continue', badCode: 'That code isn’t right. Could you try again?',
@@ -242,7 +230,7 @@ const T = {
     thanksTitle: 'Thank you so much!',
     thanksText: n => `${n} ${n === 1 ? 'file' : 'files'} reached us. Feel free to add more.`,
     leave: 'Uploads are still running. Leaving now will stop them.',
-    footer: 'Files are saved straight to Erkan & Ebru’s Google Drive. No one else can see them.',
+    footer: 'Files are saved straight to Ebru & Erkan’s Google Drive. No one else can see them.',
   },
 };
 
@@ -322,9 +310,7 @@ function readUrlCode() {
 }
 async function init() {
   applyLang();
-  // Start with an empty name for every visit (phones may be passed around at the party).
-  $('guest').value = '';
-  try { localStorage.removeItem('ee.guest'); } catch (e) {}
+  $('guest').value = store.get('guest') || '';
   let cfg = { codeRequired: false };
   try { cfg = await call('config', {}); } catch (e) {}
   eventCode = (await readUrlCode()) || store.get('code') || '';
@@ -352,6 +338,7 @@ $('codeStep').addEventListener('submit', async ev => {
 const items = [];
 let active = 0, reconnecting = 0, wakeLock = null;
 
+$('guest').addEventListener('change', () => store.set('guest', $('guest').value.trim()));
 $('files').addEventListener('change', e => {
   const files = Array.from(e.target.files || []);
   e.target.value = '';
