@@ -39,8 +39,20 @@
   }
   .hero-text { position: absolute; left: 0; right: 0; bottom: 84px; z-index: 1; text-align: center; color: #fff; padding: 0 16px; }
   .eyebrow { font-size: 12px; letter-spacing: .28em; text-transform: uppercase; font-weight: 500; opacity: .92; }
-  .names { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: clamp(48px, 13vw, 84px); line-height: 1; margin: 8px 0 6px; letter-spacing: .01em; text-shadow: 0 2px 24px rgba(0,0,0,.3); }
-  .names .amp { font-style: italic; color: #f3c9a8; padding: 0 .08em; }
+  .names {
+    font-family: "Hurricane", cursive, Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(54px, 14vw, 96px);
+    line-height: 1.05;
+    margin: 8px 0 6px;
+    letter-spacing: .01em;
+    text-shadow: 0 2px 24px rgba(0,0,0,.3);
+  }
+  .names .amp {
+    font-style: normal;
+    color: #f3c9a8;
+    padding: 0 .08em;
+  }
   .date { font-size: 15px; letter-spacing: .12em; opacity: .95; }
   .lang { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 2; display: flex; background: rgba(255,255,255,.18); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 999px; padding: 3px; }
   .lang button { border: 0; background: transparent; color: #fff; font-size: 13px; font-weight: 600; letter-spacing: .06em; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
